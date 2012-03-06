@@ -3,7 +3,7 @@
 		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 		<script type="text/javascript">
-			var draw = {
+			var board = {
 				isDrawing: false,
 				surface: null,
 
@@ -40,15 +40,15 @@
 					this.socket = io.connect('http://localhost:8080');
 
 					this.socket.on('initDraw', function(data){
-						draw.beginDraw(data.x, data.y);
+						board.beginDraw(data.x, data.y);
 					});
 
 					this.socket.on('draw', function(data){
-						draw.draw(data.x, data.y);
+						board.draw(data.x, data.y);
 					});
 
 					this.socket.on('endDraw', function(data){
-						draw.endDraw();
+						board.endDraw();
 					});
 				},
 
@@ -65,33 +65,54 @@
 				}
 			};
 
-			$(function () {
-				draw.setup();
+			function onLoad() {
+				board.setup();
 				socketIo.setup();
 
-				$('#myCanvas').mousedown(function(data){
-					draw.beginDraw(data.offsetX, data.offsetY);
-					socketIo.EmitInitLine();
-				});
+				var myCanvas = document.getElementById('myCanvas');
 
-				$('#myCanvas').mousemove(function(data){
-					if(draw.isDrawing === true){
-						draw.draw(data.offsetX, data.offsetY);
-						socketIo.EmitLine(data.offsetX, data.offsetY);
+				myCanvas.onmousedown = myCanvas.ontouchstart = function(e){
+					var xy = getInputCoordinates(e);
+
+					board.beginDraw(xy.x, xy.y);
+					socketIo.EmitInitLine(xy.x, xy.y);
+				};
+
+				myCanvas.onmousemove = myCanvas.ontouchmove = function(e){
+					if(board.isDrawing === true){
+						var xy = getInputCoordinates(e);
+						board.draw(xy.x, xy.y);
+						socketIo.EmitLine(xy.x, xy.y);
 					}
-				});
+				};
 
-				$('#myCanvas').mouseup(function(data){
-					draw.endDraw();
+				myCanvas.onmouseup = myCanvas.ontouchend = function(e){
+					board.endDraw();
 					socketIo.EmitEndLine();
-				});
+				};
 
+				function getInputCoordinates(e){
+					var x, y;
+
+					if(e.changedTouches){
+						var touchData = e.changedTouches[0];
+						x = touchData.clientX;
+						y = touchData.clientY;
+						e.preventDefault();
+					}
+					else{
+						x = e.offsetX;
+						y = e.offsetY;
+					}
+
+					return { x: x, y: y };
+				}
 				
-			});
+			}
 		</script>
 	</head>
 
-	<body>
+	<body onload="onLoad()">
 		<canvas id="myCanvas"></canvas>
 	</body>
 </html>
