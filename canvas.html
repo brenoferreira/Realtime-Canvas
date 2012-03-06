@@ -8,7 +8,10 @@
 				surface: null,
 
 				setup: function(){
-					this.surface = document.getElementById('myCanvas').getContext('2d');
+					var myCanvas = document.getElementById('myCanvas')
+					myCanvas.width = window.innerWidth;
+					myCanvas.height = window.innerHeight;
+					this.surface = myCanvas.getContext('2d');
 					this.surface.lineWidth = 5;
 					this.surface.strokeStyle = '#0000ff';
 				},
@@ -57,7 +60,7 @@
 					this.socket.emit('draw', {x: x, y: y});
 				},
 
-				EmitEndLine: function(x, y){
+				EmitEndLine: function(){
 					this.socket.emit('endDraw');
 				}
 			};
@@ -89,6 +92,6 @@
 	</head>
 
 	<body>
-		<canvas id="myCanvas" width="400" height="400"></canvas>
+		<canvas id="myCanvas"></canvas>
 	</body>
 </html>
