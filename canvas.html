@@ -101,8 +101,8 @@
 						e.preventDefault();
 					}
 					else{
-						x = e.offsetX;
-						y = e.offsetY;
+						x = e.clientX;
+						y = e.clientY;
 					}
 
 					return { x: x, y: y };
